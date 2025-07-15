@@ -12,17 +12,28 @@
     "test:coverage": "jest --coverage",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
-    "format": "prettier --write src/**/*.ts"
+    "format": "prettier --write src/**/*.ts",
+    "demo": "node dist/demo.js",
+    "play": "node dist/interactive-game.js",
+    "ai-demo": "node dist/simple-ai.js",
+    "ai-advanced": "node dist/advanced-ai.js",
+    "ai-expectimax": "node dist/expectimax-ai.js"
   },
-  "keywords": ["2048", "ai", "game", "typescript", "clean-architecture"],
+  "keywords": [
+    "2048",
+    "ai",
+    "game",
+    "typescript",
+    "clean-architecture"
+  ],
   "author": "",
   "license": "MIT",
   "devDependencies": {
     "@types/jest": "^29.5.5",
     "@types/node": "^20.6.0",
     "@types/selenium-webdriver": "^4.1.15",
-    "@typescript-eslint/eslint-plugin": "^6.7.0",
-    "@typescript-eslint/parser": "^6.7.0",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
     "eslint": "^8.49.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.0",

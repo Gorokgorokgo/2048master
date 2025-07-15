@@ -77,10 +77,10 @@ describe('GameBoardImpl', () => {
       
       expect(result.moved).toBe(true);
       expect(result.score).toBe(12); // 4 + 8 = 12
-      expect(result.board.cells[0][0]).toBe(4);
-      expect(result.board.cells[0][1]).toBe(8);
-      expect(result.board.cells[1][0]).toBe(0);
-      expect(result.board.cells[1][1]).toBe(8);
+      expect(result.board.cells[0]![0]).toBe(4);
+      expect(result.board.cells[0]![1]).toBe(8);
+      expect(result.board.cells[1]![0]).toBe(0);
+      expect(result.board.cells[1]![1]).toBe(8);
     });
 
     test('should merge tiles correctly when moving down', () => {
@@ -96,10 +96,10 @@ describe('GameBoardImpl', () => {
       
       expect(result.moved).toBe(true);
       expect(result.score).toBe(12); // 4 + 8 = 12
-      expect(result.board.cells[2][0]).toBe(0);
-      expect(result.board.cells[2][1]).toBe(8);
-      expect(result.board.cells[3][0]).toBe(4);
-      expect(result.board.cells[3][1]).toBe(8);
+      expect(result.board.cells[2]![0]).toBe(0);
+      expect(result.board.cells[2]![1]).toBe(8);
+      expect(result.board.cells[3]![0]).toBe(4);
+      expect(result.board.cells[3]![1]).toBe(8);
     });
   });
 
@@ -132,15 +132,15 @@ describe('GameBoardImpl', () => {
       expect(board.canMove(Direction.LEFT)).toBe(true);
       expect(board.canMove(Direction.RIGHT)).toBe(true);
       expect(board.canMove(Direction.UP)).toBe(false);
-      expect(board.canMove(Direction.DOWN)).toBe(false);
+      expect(board.canMove(Direction.DOWN)).toBe(true); // Can move down since there are empty spaces
     });
 
     test('should return false when trying invalid move', () => {
       const cells = [
         [2, 4, 8, 16],
-        [0, 0, 0, 0],
-        [0, 0, 0, 0],
-        [0, 0, 0, 0],
+        [32, 64, 128, 256],
+        [512, 1024, 2048, 4096],
+        [8192, 16384, 32768, 65536],
       ];
       const board = new GameBoardImpl(cells);
       
@@ -279,7 +279,7 @@ describe('GameBoardImpl', () => {
       expect(rightResult.board.cells[0]).toEqual([0, 0, 0, 2]);
       
       const downResult = board.move(Direction.DOWN);
-      expect(downResult.board.cells[3][0]).toBe(2);
+      expect(downResult.board.cells[3]![0]).toBe(2);
     });
 
     test('should handle multiple consecutive merges', () => {

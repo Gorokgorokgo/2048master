@@ -5,11 +5,7 @@ export class GameBoardImpl implements GameBoard {
   private readonly _score: number;
   private readonly _size: number;
 
-  constructor(
-    cells?: number[][],
-    score: number = 0,
-    size: number = 4
-  ) {
+  constructor(cells?: number[][], score: number = 0, size: number = 4) {
     this._size = size;
     this._score = score;
     this._cells = cells ? this.deepCloneCells(cells) : this.createEmptyBoard();
@@ -261,7 +257,7 @@ export class GameBoardImpl implements GameBoard {
   private canMergeLine(line: number[]): boolean {
     const original = [...line];
     const { line: merged } = this.mergeLine(line);
-    
+
     for (let i = 0; i < original.length; i++) {
       if (original[i] !== merged[i]) {
         return true;

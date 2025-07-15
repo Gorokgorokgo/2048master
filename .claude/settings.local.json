@@ -5,7 +5,16 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(npm init:*)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(npm test)",
+      "Bash(npx ts-node:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm run:*)",
+      "Bash(timeout 60 npm run ai-expectimax)",
+      "Bash(node:*)",
+      "WebFetch(domain:play2048.co)",
+      "Bash(npx tsc:*)",
+      "Bash(npm install:*)"
     ],
     "deny": []
   }
