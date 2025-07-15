@@ -16,26 +16,26 @@ export class WebGameController {
     this.driver = await new Builder().forBrowser('chrome').build();
     await this.driver.get(this.gameUrl);
 
-    console.log('📄 Page loaded, waiting for game to initialize...');
 
-    // 페이지 로드 대기
-    await this.driver.sleep(5000);
+    await this.driver.sleep(10);
+    
+    // 페이지가 완전히 로드될 때까지 대기
+    await this.driver.wait(until.elementLocated(By.css('body')), 10000);
 
     // 페이지 소스 일부 확인
-    const title = await this.driver.getTitle();
-    console.log(`📋 Page title: ${title}`);
+    await this.driver.getTitle();
 
     // "New Game" 버튼 찾아서 클릭
     try {
-      console.log('🔍 Looking for New Game button...');
       const newGameSelectors = [
-        'button:contains("New Game")',
         '.restart-button',
-        '.new-game-button',
-        'button[class*="new"]',
+        '.new-game-button', 
+        'button.restart-button',
+        '.restart',
         'button[class*="restart"]',
-        '[role="button"]:contains("New Game")',
-        '*:contains("New Game")',
+        'button[class*="new-game"]',
+        '.game-intro button',
+        '.above-game button',
       ];
 
       let newGameFound = false;
@@ -43,7 +43,6 @@ export class WebGameController {
         try {
           const elements = await this.driver.findElements(By.css(selector));
           if (elements.length > 0) {
-            console.log(`✅ Found potential New Game button with: ${selector}`);
             await elements[0]!.click();
             newGameFound = true;
             break;
@@ -62,23 +61,18 @@ export class WebGameController {
             )
           );
           await newGameButton.click();
-          console.log('✅ Clicked New Game button via xpath');
           newGameFound = true;
         } catch (e) {
-          console.log('⚠️ Could not find New Game button');
         }
       }
 
       if (newGameFound) {
-        await this.driver.sleep(2000); // 게임 시작 대기
       }
     } catch (error) {
-      console.log('⚠️ Error trying to click New Game:', error);
     }
 
     // 튜토리얼 건너뛰기 시도
     try {
-      console.log('🔍 Looking for tutorial skip button...');
       const skipButtons = await this.driver.findElements(
         By.xpath(
           "//*[contains(text(), 'Skip')] | //*[contains(text(), 'Close')] | //*[contains(text(), 'Play')]"
@@ -86,45 +80,56 @@ export class WebGameController {
       );
       if (skipButtons.length > 0) {
         await skipButtons[0]!.click();
-        console.log('✅ Clicked tutorial skip/close button');
-        await this.driver.sleep(1000);
+        await this.driver.sleep(5);
       }
     } catch (e) {
-      console.log('⚠️ No tutorial to skip');
+    }
+
+    // 게임 시작을 위한 적극적인 접근
+    try {
+      
+      // 페이지의 여러 위치를 클릭해서 게임을 활성화
+      const clickTargets = [
+        'body',
+        '.game-container', 
+        '.grid-container',
+        '.tile-container',
+        '#game-container',
+        'main',
+        '.above-game'
+      ];
+      
+      for (const target of clickTargets) {
+        try {
+          const element = await this.driver.findElement(By.css(target));
+          await element.click();
+          } catch (e) {
+          // 요소가 없으면 무시
+        }
+      }
+      
+      // 키 입력으로 게임 시작 시도
+      const body = await this.driver.findElement(By.css('body'));
+      await body.sendKeys(Key.ARROW_RIGHT, Key.ARROW_LEFT, Key.ARROW_UP, Key.ARROW_DOWN);
+      
+    } catch (error) {
     }
 
     // DOM 구조 더 자세히 분석
     try {
-      console.log('🔍 Analyzing DOM structure...');
 
       // 숫자가 포함된 요소들 찾기 (타일일 가능성)
-      const numberElements = await this.driver.findElements(
-        By.xpath(
-          "//*[text()='2' or text()='4' or text()='8' or text()='16' or text()='32']"
-        )
-      );
-      console.log(`🔢 Elements with numbers: ${numberElements.length}`);
 
       // canvas 요소 확인 (게임이 canvas로 그려질 수 있음)
-      const canvasElements = await this.driver.findElements(By.css('canvas'));
-      console.log(`🎨 Canvas elements: ${canvasElements.length}`);
 
       // iframe 확인 (게임이 iframe 안에 있을 수 있음)
       const iframes = await this.driver.findElements(By.css('iframe'));
-      console.log(`🖼️ Iframe elements: ${iframes.length}`);
 
       if (iframes.length > 0) {
-        console.log('🔄 Switching to iframe...');
         await this.driver.switchTo().frame(iframes[0]!);
 
         // iframe 내에서 다시 검색
-        const iframeElements = await this.driver.findElements(By.css('*'));
-        console.log(`📋 Elements in iframe: ${iframeElements.length}`);
 
-        const iframeTiles = await this.driver.findElements(
-          By.css('[class*="tile"], [class*="cell"], .game-cell, .tile')
-        );
-        console.log(`🎮 Tiles in iframe: ${iframeTiles.length}`);
 
         // iframe에서 나오기
         await this.driver.switchTo().defaultContent();
@@ -132,7 +137,6 @@ export class WebGameController {
 
       // div 요소들을 모두 확인해서 4x4 그리드 패턴 찾기
       const divs = await this.driver.findElements(By.css('div'));
-      console.log(`📦 Total div elements: ${divs.length}`);
 
       // 특정 패턴의 class 찾기
       let foundGameBoard = false;
@@ -159,13 +163,10 @@ export class WebGameController {
       }
 
       if (!foundGameBoard) {
-        console.log('⚠️ No obvious game board found');
       }
     } catch (e) {
-      console.log('⚠️ Error analyzing DOM:', e);
     }
 
-    console.log('🌐 Web game initialized');
   }
 
   async close(): Promise<void> {
@@ -203,8 +204,6 @@ export class WebGameController {
       await this.driver.findElement(By.css('body')).click();
       await this.driver.actions().sendKeys(key).perform();
 
-      // 이동 애니메이션이 완료될 때까지 대기
-      await this.driver.sleep(300);
 
       return true;
     } catch (error) {
@@ -223,25 +222,23 @@ export class WebGameController {
       .map(() => Array(4).fill(0));
 
     try {
-      // 여러 가능한 타일 선택자 시도
+      // play2048.co에 특화된 타일 선택자들
       const tileSelectors = [
+        '.tile.tile-position-1-1, .tile.tile-position-1-2, .tile.tile-position-1-3, .tile.tile-position-1-4,' +
+        '.tile.tile-position-2-1, .tile.tile-position-2-2, .tile.tile-position-2-3, .tile.tile-position-2-4,' +
+        '.tile.tile-position-3-1, .tile.tile-position-3-2, .tile.tile-position-3-3, .tile.tile-position-3-4,' +
+        '.tile.tile-position-4-1, .tile.tile-position-4-2, .tile.tile-position-4-3, .tile.tile-position-4-4',
         '.tile',
-        '[class*="tile"]',
-        '[class*="cell"]',
-        '.game-cell',
         '.tile-inner',
+        '[class*="tile-position"]',
+        '.game-container .tile',
       ];
 
       let tiles: WebElement[] = [];
       for (const selector of tileSelectors) {
         try {
           tiles = await this.driver.findElements(By.css(selector));
-          if (tiles.length > 0) {
-            console.log(
-              `Found ${tiles.length} tiles with selector: ${selector}`
-            );
-            break;
-          }
+          if (tiles.length > 0) break;
         } catch (e) {
           continue;
         }
@@ -352,11 +349,31 @@ export class WebGameController {
     }
 
     try {
-      // "Game Over" 메시지 또는 "Try Again" 버튼 확인
-      const gameOverElements = await this.driver.findElements(
-        By.css('.game-over, .game-won, .retry-button')
-      );
-      return gameOverElements.length > 0;
+      // play2048.co의 게임오버 상태 확인
+      const gameOverSelectors = [
+        '.game-over',
+        '.game-message',
+        '.game-won',
+        '.retry-button',
+        '[class*="game-over"]',
+        '[class*="game-message"]'
+      ];
+      
+      for (const selector of gameOverSelectors) {
+        try {
+          const elements = await this.driver.findElements(By.css(selector));
+          if (elements.length > 0) {
+            const text = await elements[0]!.getText();
+            if (text.includes('Game Over') || text.includes('Try Again') || text.includes('game over')) {
+              return true;
+            }
+          }
+        } catch (e) {
+          continue;
+        }
+      }
+      
+      return false;
     } catch (error) {
       return false;
     }
@@ -390,14 +407,13 @@ export class WebGameController {
       );
       await retryButton.click();
 
-      // 게임이 재시작될 때까지 대기
-      await this.driver.sleep(500);
+      // 게임이 재시작될 때까지 대기 (2배 빠르게)
     } catch (error) {
       // 버튼이 없으면 페이지 새로고침
       await this.driver.navigate().refresh();
       await this.driver.wait(
         until.elementLocated(By.className('grid-container')),
-        10000
+        5000
       );
     }
   }
@@ -410,7 +426,6 @@ export class WebGameController {
     const screenshot = await this.driver.takeScreenshot();
     const fs = require('fs');
     fs.writeFileSync(filename, screenshot, 'base64');
-    console.log(`Screenshot saved: ${filename}`);
   }
 
   async clickCenter(): Promise<void> {
@@ -422,7 +437,6 @@ export class WebGameController {
       // 페이지 중앙 클릭
       const body = await this.driver.findElement(By.css('body'));
       await body.click();
-      console.log('🖱️ Clicked center of page');
     } catch (error) {
       console.warn('Failed to click center:', error);
     }
