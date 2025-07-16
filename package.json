@@ -17,7 +17,8 @@
     "play": "node dist/interactive-game.js",
     "ai-demo": "node dist/simple-ai.js",
     "ai-advanced": "node dist/advanced-ai.js",
-    "ai-expectimax": "node dist/expectimax-ai.js"
+    "ai-expectimax": "node dist/expectimax-ai.js",
+    "web-ai": "node dist/web-ai-player.js"
   },
   "keywords": [
     "2048",
