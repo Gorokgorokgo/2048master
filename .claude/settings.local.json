@@ -14,7 +14,8 @@
       "Bash(node:*)",
       "WebFetch(domain:play2048.co)",
       "Bash(npx tsc:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(timeout:*)"
     ],
     "deny": []
   }
